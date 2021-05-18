@@ -1,7 +1,7 @@
 @file:Suppress("UNCHECKED_CAST")
 @file:OptIn(ExperimentalUnsignedTypes::class)
 
-package site.neworld.cio
+package site.neworld.cio.unsafe
 
 external fun copy(src: ByteArray, dst: Long, size: Int)
 

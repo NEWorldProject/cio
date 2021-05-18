@@ -1,7 +1,6 @@
 @file:Suppress("MemberVisibilityCanBePrivate")
-@file:OptIn(ExperimentalUnsignedTypes::class)
 
-package site.neworld.cio
+package site.neworld.cio.unsafe
 
 import site.neworld.utils.SyncClosable
 
