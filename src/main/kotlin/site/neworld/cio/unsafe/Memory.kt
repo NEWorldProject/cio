@@ -4,15 +4,15 @@ package site.neworld.cio.unsafe
 
 import site.neworld.utils.SyncClosable
 
-abstract class Memory(val native: Long, val size: Long): SyncClosable
+abstract class Memory(val native: Long, val size: Long) : SyncClosable
 
-class TempMemory(native: Long, size: Long): Memory(native, size) {
+class TempMemory(native: Long, size: Long) : Memory(native, size) {
     override fun close() {
         TODO("Not yet implemented")
     }
 }
 
-class HeapMemory(native: Long, size: Long): Memory(native, size) {
+class HeapMemory(native: Long, size: Long) : Memory(native, size) {
     override fun close() {
         TODO("Not yet implemented")
     }

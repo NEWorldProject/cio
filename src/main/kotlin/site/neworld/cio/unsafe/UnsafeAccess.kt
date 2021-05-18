@@ -1,4 +1,5 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 
 package site.neworld.cio.unsafe
 

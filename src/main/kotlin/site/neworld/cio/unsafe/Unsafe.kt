@@ -1,4 +1,6 @@
 @file:OptIn(ExperimentalContracts::class)
+@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
+
 package site.neworld.cio.unsafe
 
 import jdk.internal.misc.Unsafe

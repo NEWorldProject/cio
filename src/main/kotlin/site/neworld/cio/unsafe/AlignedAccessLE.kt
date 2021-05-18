@@ -1,5 +1,13 @@
 package site.neworld.cio.unsafe
 
+import java.lang.Double.doubleToLongBits
+import java.lang.Double.longBitsToDouble
+import java.lang.Float.floatToIntBits
+import java.lang.Float.intBitsToFloat
+import java.lang.Integer.reverseBytes
+import java.lang.Long.reverseBytes
+import java.lang.Short.reverseBytes
+
 @JvmInline
 @OptIn(ExperimentalUnsignedTypes::class)
 value class AlignedAccessLE(private val access: UnsafeAccess) {
@@ -27,25 +35,23 @@ value class AlignedAccessLE(private val access: UnsafeAccess) {
 
     fun getByte(offset: Int) = access.getByte(offset)
     fun getUByte(offset: Int) = access.getByte(offset).toUByte()
-    fun getShort(offset: Int) = java.lang.Short.reverseBytes(access.getShort(offset))
-    fun getUShort(offset: Int) = java.lang.Short.reverseBytes(access.getShort(offset)).toUShort()
-    fun getInt(offset: Int) = Integer.reverseBytes(access.getInt(offset))
-    fun getUInt(offset: Int) = Integer.reverseBytes(access.getInt(offset)).toUInt()
-    fun getLong(offset: Int) = java.lang.Long.reverseBytes(access.getLong(offset))
-    fun getULong(offset: Int) = java.lang.Long.reverseBytes(access.getLong(offset)).toULong()
-    fun getFloat(offset: Int) = java.lang.Float.intBitsToFloat(Integer.reverseBytes(access.getInt(offset)))
-    fun getDouble(offset: Int) = java.lang.Double.longBitsToDouble(java.lang.Long.reverseBytes(access.getLong(offset)))
+    fun getShort(offset: Int) = reverseBytes(access.getShort(offset))
+    fun getUShort(offset: Int) = reverseBytes(access.getShort(offset)).toUShort()
+    fun getInt(offset: Int) = reverseBytes(access.getInt(offset))
+    fun getUInt(offset: Int) = reverseBytes(access.getInt(offset)).toUInt()
+    fun getLong(offset: Int) = reverseBytes(access.getLong(offset))
+    fun getULong(offset: Int) = reverseBytes(access.getLong(offset)).toULong()
+    fun getFloat(offset: Int) = intBitsToFloat(reverseBytes(access.getInt(offset)))
+    fun getDouble(offset: Int) = longBitsToDouble(reverseBytes(access.getLong(offset)))
 
     fun putByte(offset: Int, v: Byte) = access.putByte(offset, v)
     fun putUByte(offset: Int, v: UByte) = access.putByte(offset, v.toByte())
-    fun putShort(offset: Int, v: Short) = access.putShort(offset, java.lang.Short.reverseBytes(v))
-    fun putUShort(offset: Int, v: UShort) = access.putShort(offset, java.lang.Short.reverseBytes(v.toShort()))
-    fun putInt(offset: Int, v: Int) = access.putInt(offset, Integer.reverseBytes(v))
-    fun putUInt(offset: Int, v: UInt) = access.putInt(offset, Integer.reverseBytes(v.toInt()))
-    fun putLong(offset: Int, v: Long) = access.putLong(offset, java.lang.Long.reverseBytes(v))
-    fun putULong(offset: Int, v: ULong) = access.putLong(offset, java.lang.Long.reverseBytes(v.toLong()))
-    fun putFloat(offset: Int, v: Float) = access.putInt(offset, Integer.reverseBytes(java.lang.Float.floatToIntBits(v)))
-    fun putDouble(offset: Int, v: Double) = access.putLong(offset,
-        java.lang.Long.reverseBytes(java.lang.Double.doubleToLongBits(v))
-    )
+    fun putShort(offset: Int, v: Short) = access.putShort(offset, reverseBytes(v))
+    fun putUShort(offset: Int, v: UShort) = access.putShort(offset, reverseBytes(v.toShort()))
+    fun putInt(offset: Int, v: Int) = access.putInt(offset, reverseBytes(v))
+    fun putUInt(offset: Int, v: UInt) = access.putInt(offset, reverseBytes(v.toInt()))
+    fun putLong(offset: Int, v: Long) = access.putLong(offset, reverseBytes(v))
+    fun putULong(offset: Int, v: ULong) = access.putLong(offset, reverseBytes(v.toLong()))
+    fun putFloat(offset: Int, v: Float) = access.putInt(offset, reverseBytes(floatToIntBits(v)))
+    fun putDouble(offset: Int, v: Double) = access.putLong(offset, reverseBytes(doubleToLongBits(v)))
 }
