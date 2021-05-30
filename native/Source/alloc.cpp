@@ -44,7 +44,7 @@ static jlong JNICALL tempRelocate(JNIEnv *, jclass, jlong h, jlong oldSize, jlon
 void registerMemoryKt(JNIEnv *e) noexcept {
     const JNINativeMethod methods[] = {
             {c("tempFree"),      c("(JJ)V"),  erase(tempFree)},
-            {c("tempAllocateI"), c("(J)J"),   erase(tempAllocate)},
+            {c("tempAllocate"), c("(J)J"),   erase(tempAllocate)},
             {c("tempRelocate"),  c("(JJJ)J"), erase(tempRelocate)},
             {c("heapFree"),      c("(JJ)V"),  erase(heapFree)},
             {c("heapAllocate"),  c("(J)J"),   erase(heapAllocate)},

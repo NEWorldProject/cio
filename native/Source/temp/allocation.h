@@ -8,9 +8,9 @@ struct Header final {
     std::atomic_int32_t flying{0};
 };
 
-static Header *fetch() noexcept { return new(getBlock()->data) Header; }
+static Header *fetch() noexcept { return new(reinterpret_cast<void*>(getBlock())) Header; }
 
-static void release(Header *const blk) noexcept { returnBlock(reinterpret_cast<Block *>(blk)); }
+static void release(Header *const blk) noexcept { returnBlock(reinterpret_cast<uintptr_t>(blk)); }
 
 [[nodiscard]] static constexpr uintptr_t maxAlign(const uintptr_t size) noexcept {
     constexpr auto mask = alignof(std::max_align_t) - 1;
@@ -31,7 +31,7 @@ public:
     }
 
     void reset(Header *const other) noexcept {
-        current = other, head = reinterpret_cast<uintptr_t>(current) + alignedHeaderSize, count = 0;
+        current = other, head = alignedHeaderSize, count = 0;
     }
 
     [[nodiscard]] void *allocate(const uintptr_t size) noexcept {

@@ -5,7 +5,7 @@
 
 static constexpr uintptr_t BlockSize = 4u << 20u; // 4MiB
 static constexpr uintptr_t BlockEnd = BlockSize - 64; // Reverse the last cache line for housekeeping
-
+/*
 struct Block {
     char data[BlockEnd]{};
     char reserved[64]{};
@@ -51,3 +51,6 @@ static void returnBlock(Block *const blk) noexcept {
     VirtualFree(reinterpret_cast<LPVOID>(reinterpret_cast<HouseKeep *>(blk->reserved)->Base), 0, MEM_RELEASE);
 #endif
 }
+*/
+uintptr_t getBlock() noexcept;
+void returnBlock(uintptr_t blk) noexcept;
