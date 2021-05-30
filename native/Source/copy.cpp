@@ -1,8 +1,6 @@
-#include <jni.h>
 #include <cstring>
 #include "endian.h"
-
-static void *ptr(const jlong mem) noexcept { return reinterpret_cast<void *>(static_cast<uintptr_t>(mem)); }
+#include "shared.h"
 
 static void JNICALL copyB2N(JNIEnv *e, jclass, jbyteArray src, jlong dst, jint size) noexcept {
     const auto c_src = e->GetPrimitiveArrayCritical(src, nullptr);
@@ -46,12 +44,6 @@ static void JNICALL copyU2M(JNIEnv *e, jclass, jlong src, jint size, jarray dst,
 
 static_assert(std::numeric_limits<float>::is_iec559);
 static_assert(std::numeric_limits<double>::is_iec559);
-
-template<class T>
-static void *erase(T fn) noexcept { return reinterpret_cast<void *>(fn); }
-
-// I do not know what is wrong with JNI developers, but this is the only way
-static char *c(const char *s) noexcept { return const_cast<char *>(s); }
 
 void registerArrayKt(JNIEnv *e) noexcept {
     static char *const name = c("copy");
