@@ -1,5 +1,4 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
-@file:Suppress("UNCHECKED_CAST", "JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 
 package site.neworld.cio.unsafe
 
@@ -43,25 +42,23 @@ fun copy(src: ULongArray, dst: Long, size: Int, le: Boolean) = copy(src.asLongAr
 
 fun copy(src: Long, size: Int, dst: ULongArray, le: Boolean) = copy(src, size, dst.asLongArray(), le)
 
-private inline fun <reified T : Any, R> arrayFast(size: Int) =
-    UNSAFE.allocateUninitializedArray(T::class.javaPrimitiveType, size) as R
+// NOTE: This is not ideal, but we cannot do it any better without accessing java.internal.misc.Unsafe
+fun byteArrayFast(size: Int) = ByteArray(size)
 
-fun byteArrayFast(size: Int) = arrayFast<Byte, ByteArray>(size)
+fun shortArrayFast(size: Int) = ShortArray(size)
 
-fun shortArrayFast(size: Int) = arrayFast<Short, ShortArray>(size)
+fun intArrayFast(size: Int) = IntArray(size)
 
-fun intArrayFast(size: Int) = arrayFast<Int, IntArray>(size)
+fun longArrayFast(size: Int) = LongArray(size)
 
-fun longArrayFast(size: Int) = arrayFast<Long, LongArray>(size)
+fun floatArrayFast(size: Int) = FloatArray(size)
 
-fun floatArrayFast(size: Int) = arrayFast<Float, FloatArray>(size)
+fun doubleArrayFast(size: Int) = DoubleArray(size)
 
-fun doubleArrayFast(size: Int) = arrayFast<Double, DoubleArray>(size)
+fun uByteArrayFast(size: Int) = ByteArray(size).asUByteArray()
 
-fun uByteArrayFast(size: Int) = arrayFast<Byte, ByteArray>(size).asUByteArray()
+fun uShortArrayFast(size: Int) = ShortArray(size).asUShortArray()
 
-fun uShortArrayFast(size: Int) = arrayFast<Short, ShortArray>(size).asUShortArray()
+fun uIntArrayFast(size: Int) = IntArray(size).asUIntArray()
 
-fun uIntArrayFast(size: Int) = arrayFast<Int, IntArray>(size).asUIntArray()
-
-fun uLongArrayFast(size: Int) = arrayFast<Long, LongArray>(size).asULongArray()
+fun uLongArrayFast(size: Int) = LongArray(size).asULongArray()

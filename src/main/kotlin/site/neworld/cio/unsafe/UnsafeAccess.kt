@@ -1,5 +1,4 @@
 @file:OptIn(ExperimentalUnsignedTypes::class)
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 
 package site.neworld.cio.unsafe
 
@@ -112,92 +111,92 @@ value class UnsafeAccess(private val memory: Memory) {
 
     fun getByte(offset: Int): Byte {
         assert(offset < memory.size)
-        return UNSAFE.getByte(memory.native + offset)
+        return Foreign.getByte(memory.native + offset)
     }
 
     fun putByte(offset: Int, v: Byte) {
         assert(offset < memory.size)
-        UNSAFE.putByte(memory.native + offset, v)
+        Foreign.putByte(memory.native + offset, v)
     }
 
     fun getShort(offset: Int): Short {
         assert(offset + 1 < memory.size)
-        return UNSAFE.getShort(memory.native + offset)
+        return Foreign.getShort(memory.native + offset)
     }
 
     fun putShort(offset: Int, v: Short) {
         assert(offset + 1 < memory.size)
-        UNSAFE.putShort(memory.native + offset, v)
+        Foreign.putShort(memory.native + offset, v)
     }
 
     fun getInt(offset: Int): Int {
         assert(offset + 3 < memory.size)
-        return UNSAFE.getInt(memory.native + offset)
+        return Foreign.getInt(memory.native + offset)
     }
 
     fun putInt(offset: Int, v: Int) {
         assert(offset + 3 < memory.size)
-        UNSAFE.putInt(memory.native + offset, v)
+        Foreign.putInt(memory.native + offset, v)
     }
 
     fun getLong(offset: Int): Long {
         assert(offset + 7 < memory.size)
-        return UNSAFE.getLong(memory.native + offset)
+        return Foreign.getLong(memory.native + offset)
     }
 
     fun putLong(offset: Int, v: Long) {
         assert(offset + 7 < memory.size)
-        UNSAFE.putLong(memory.native + offset, v)
+        Foreign.putLong(memory.native + offset, v)
     }
 
     fun getFloat(offset: Int): Float {
         assert(offset + 3 < memory.size)
-        return UNSAFE.getFloat(memory.native + offset)
+        return Foreign.getFloat(memory.native + offset)
     }
 
     fun putFloat(offset: Int, v: Float) {
         assert(offset + 3 < memory.size)
-        UNSAFE.putFloat(memory.native + offset, v)
+        Foreign.putFloat(memory.native + offset, v)
     }
 
     fun getDouble(offset: Int): Double {
         assert(offset + 7 < memory.size)
-        return UNSAFE.getDouble(memory.native + offset)
+        return Foreign.getDouble(memory.native + offset)
     }
 
     fun putDouble(offset: Int, v: Double) {
         assert(offset + 7 < memory.size)
-        UNSAFE.putDouble(memory.native + offset, v)
+        Foreign.putDouble(memory.native + offset, v)
     }
 
     fun getShortA(offset: Int): Short {
         assert(offset + 1 < memory.size)
-        return UNSAFE.getShortUnaligned(null, memory.native + offset)
+        return Foreign.getShortA(memory.native + offset)
     }
 
     fun putShortA(offset: Int, v: Short) {
         assert(offset + 1 < memory.size)
-        UNSAFE.putShortUnaligned(null, memory.native + offset, v)
+        Foreign.putShortA(memory.native + offset, v)
     }
 
     fun getIntA(offset: Int): Int {
         assert(offset + 3 < memory.size)
-        return UNSAFE.getIntUnaligned(null, memory.native + offset)
+        return Foreign.getIntA(memory.native + offset)
     }
 
     fun putIntA(offset: Int, v: Int) {
         assert(offset + 3 < memory.size)
-        UNSAFE.putIntUnaligned(null, memory.native + offset, v)
+        Foreign.putIntA(memory.native + offset, v)
     }
 
     fun getLongA(offset: Int): Long {
         assert(offset + 7 < memory.size)
-        return UNSAFE.getLongUnaligned(null, memory.native + offset)
+        return Foreign.getLongA(memory.native + offset)
     }
 
     fun putLongA(offset: Int, v: Long) {
         assert(offset + 7 < memory.size)
-        UNSAFE.putLongUnaligned(null, memory.native + offset, v)
+        Foreign.putLongA(memory.native + offset, v)
     }
 
     fun getFloatA(offset: Int) = intBitsToFloat(getIntA(offset))

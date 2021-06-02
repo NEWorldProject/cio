@@ -1,17 +1,11 @@
 @file:OptIn(ExperimentalContracts::class)
-@file:Suppress("JAVA_MODULE_DOES_NOT_EXPORT_PACKAGE")
 
 package site.neworld.cio.unsafe
-
-import jdk.internal.misc.Unsafe
 import site.neworld.utils.safeInit
 import site.neworld.utils.use
 import kotlin.contracts.ExperimentalContracts
 import kotlin.contracts.InvocationKind
 import kotlin.contracts.contract
-
-internal val UNSAFE = Unsafe::class.java.getDeclaredField("theUnsafe")
-    .apply { isAccessible = true }.get(null) as Unsafe
 
 enum class ReleaseOption {
     NEVER, ALWAYS, ON_FAIL
@@ -19,8 +13,8 @@ enum class ReleaseOption {
 
 inline fun unsafe(
     memory: Memory,
+    release: ReleaseOption = ReleaseOption.ALWAYS,
     block: AlignedAccess.() -> Unit,
-    release: ReleaseOption = ReleaseOption.ALWAYS
 ) {
     contract { callsInPlace(block, InvocationKind.EXACTLY_ONCE) }
     val warp = AlignedAccess(UnsafeAccess(memory))
