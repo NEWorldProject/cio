@@ -3,10 +3,7 @@
 #include <bit>
 #include <cstring>
 #include <cstdint>
-
-#ifdef _MSC_VER
-#include <intrin.h>
-#endif
+#include <cstdlib>
 
 constexpr bool native_le = std::endian::native == std::endian::little;
 

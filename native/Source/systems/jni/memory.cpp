@@ -1,10 +1,7 @@
 #include <cstdlib>
 #include <cstring>
-#include <cstdint>
-#include "shared.h"
-#include "temp/allocation.h"
-
-static constexpr uintptr_t AllocThreshold = 1u << 18u;
+#include "interfaces/jni.h"
+#include "interfaces/temp.h"
 
 static void JNICALL heapFree(JNIEnv *, jclass, jlong hdc, jlong) noexcept { std::free(ptr(hdc)); }
 
@@ -15,11 +12,11 @@ static jlong JNICALL heapRelocate(JNIEnv *, jclass, jlong h, jlong, jlong newSiz
 }
 
 static void tempFreeI(void *mem, jlong size) noexcept {
-    if (size <= AllocThreshold) PerThread::free(mem); else std::free(mem);
+    if (size <= internal::temp_max_span) internal::temp_free(mem); else std::free(mem);
 }
 
 static void *tempAllocateI(jlong size) noexcept {
-    if (size <= AllocThreshold) return PerThread::allocate(size);
+    if (size <= internal::temp_max_span) return internal::temp_allocate(size);
     return std::malloc(size);
 }
 
@@ -29,9 +26,10 @@ static jlong JNICALL tempAllocate(JNIEnv *, jclass, jlong size) noexcept { retur
 
 static jlong JNICALL tempRelocate(JNIEnv *, jclass, jlong h, jlong oldSize, jlong newSize) noexcept {
     // skip two situations where we have a fast path
-    if (oldSize <= AllocThreshold && newSize <= oldSize) return h;
-    if (oldSize > AllocThreshold && newSize > AllocThreshold) return hdc(std::realloc(ptr(h), newSize));
-    // allocate a new segment
+    if (oldSize <= internal::temp_max_span && newSize <= oldSize) return h;
+    if (oldSize > internal::temp_max_span && newSize > internal::temp_max_span)
+        return hdc(std::realloc(ptr(h), newSize));
+    // temp_allocate a new segment
     const auto segment = tempAllocateI(newSize);
     // early return on failure
     if (!segment) return 0ll;
@@ -43,12 +41,12 @@ static jlong JNICALL tempRelocate(JNIEnv *, jclass, jlong h, jlong oldSize, jlon
 
 void registerMemoryKt(JNIEnv *e) noexcept {
     const JNINativeMethod methods[] = {
-            {c("tempFree"),      c("(JJ)V"),  erase(tempFree)},
-            {c("tempAllocate"), c("(J)J"),   erase(tempAllocate)},
-            {c("tempRelocate"),  c("(JJJ)J"), erase(tempRelocate)},
-            {c("heapFree"),      c("(JJ)V"),  erase(heapFree)},
-            {c("heapAllocate"),  c("(J)J"),   erase(heapAllocate)},
-            {c("heapRelocate"),  c("(JJJ)J"), erase(heapRelocate)},
+            {mut("tempFree"),     mut("(JJ)V"),  erase(tempFree)},
+            {mut("tempAllocate"), mut("(J)J"),   erase(tempAllocate)},
+            {mut("tempRelocate"), mut("(JJJ)J"), erase(tempRelocate)},
+            {mut("heapFree"),     mut("(JJ)V"),  erase(heapFree)},
+            {mut("heapAllocate"), mut("(J)J"),   erase(heapAllocate)},
+            {mut("heapRelocate"), mut("(JJJ)J"), erase(heapRelocate)},
     };
     const auto clazz = e->FindClass("site/neworld/cio/unsafe/MemoryKt");
     e->RegisterNatives(clazz, methods, 6);

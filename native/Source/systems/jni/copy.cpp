@@ -1,6 +1,6 @@
 #include <cstring>
 #include "endian.h"
-#include "shared.h"
+#include "interfaces/jni.h"
 
 static void JNICALL copyB2N(JNIEnv *e, jclass, jbyteArray src, jlong dst, jint size) noexcept {
     const auto c_src = e->GetPrimitiveArrayCritical(src, nullptr);
@@ -46,20 +46,20 @@ static_assert(std::numeric_limits<float>::is_iec559);
 static_assert(std::numeric_limits<double>::is_iec559);
 
 void registerArrayKt(JNIEnv *e) noexcept {
-    static char *const name = c("copy");
+    static char *const name = mut("copy");
     const JNINativeMethod methods[] = {
-            {name, c("([BJI)V"),  erase(copyB2N)},
-            {name, c("(JI[B)V"),  erase(copyN2B)},
-            {name, c("([SJIZ)V"), erase(copyM2U<uint16_t>)},
-            {name, c("(JI[SZ)V"), erase(copyU2M<uint16_t>)},
-            {name, c("([IJIZ)V"), erase(copyM2U<uint32_t>)},
-            {name, c("(JI[IZ)V"), erase(copyU2M<uint32_t>)},
-            {name, c("([JJIZ)V"), erase(copyM2U<uint64_t>)},
-            {name, c("(JI[JZ)V"), erase(copyU2M<uint64_t>)},
-            {name, c("([FJIZ)V"), erase(copyM2U<uint32_t>)},
-            {name, c("(JI[FZ)V"), erase(copyU2M<uint32_t>)},
-            {name, c("([DJIZ)V"), erase(copyM2U<uint64_t>)},
-            {name, c("(JI[DZ)V"), erase(copyU2M<uint64_t>)}
+            {name, mut("([BJI)V"),  erase(copyB2N)},
+            {name, mut("(JI[B)V"),  erase(copyN2B)},
+            {name, mut("([SJIZ)V"), erase(copyM2U<uint16_t>)},
+            {name, mut("(JI[SZ)V"), erase(copyU2M<uint16_t>)},
+            {name, mut("([IJIZ)V"), erase(copyM2U<uint32_t>)},
+            {name, mut("(JI[IZ)V"), erase(copyU2M<uint32_t>)},
+            {name, mut("([JJIZ)V"), erase(copyM2U<uint64_t>)},
+            {name, mut("(JI[JZ)V"), erase(copyU2M<uint64_t>)},
+            {name, mut("([FJIZ)V"), erase(copyM2U<uint32_t>)},
+            {name, mut("(JI[FZ)V"), erase(copyU2M<uint32_t>)},
+            {name, mut("([DJIZ)V"), erase(copyM2U<uint64_t>)},
+            {name, mut("(JI[DZ)V"), erase(copyU2M<uint64_t>)}
     };
     const auto clazz = e->FindClass("site/neworld/cio/unsafe/ArrayKt");
     e->RegisterNatives(clazz, methods, 12);

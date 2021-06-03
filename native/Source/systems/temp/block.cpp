@@ -1,7 +1,5 @@
 #include "block.h"
 #include <mutex>
-#include <queue>
-#include <cstdint>
 
 #define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
@@ -30,14 +28,14 @@ namespace {
 
         // we do not need to cleanup anything as the OS will release them all on process termination
 
-        uintptr_t allocate() noexcept {
+        void* allocate() noexcept {
             const std::lock_guard lock(m_lock);
-            return compute_base(alloc_id());
+            return reinterpret_cast<void*>(compute_base(alloc_id()));
         }
 
-        void free(const uintptr_t ptr) noexcept {
+        void free(void* const ptr) noexcept {
             const std::lock_guard lock(m_lock);
-            release_id((ptr - m_start_address) >> g_block_size_shl);
+            release_id((reinterpret_cast<uintptr_t>(ptr) - m_start_address) >> g_block_size_shl);
         }
 
         static block_host &instance() noexcept {
@@ -64,20 +62,20 @@ namespace {
             return (in + mask) & (~mask);
         }
 
-        //AVL tree free-space management
+        //AVL tree temp_free-space management
         struct avl_node {
             avl_node *left;
             avl_node *right;
             avl_node *parent;
-            uintptr_t height;
+            intptr_t height;
 
             [[nodiscard]] uintptr_t key() const noexcept { return reinterpret_cast<uintptr_t>(this); }
 
             [[nodiscard]] uintptr_t value() const noexcept { return key(); }
 
-            [[nodiscard]] intptr_t left_height() const noexcept { return (left ? left->height : 0); }
+            [[nodiscard]] intptr_t left_height() const noexcept { return (left ? left->height : 0u); }
 
-            [[nodiscard]] intptr_t right_height() const noexcept { return (right ? right->height : 0); }
+            [[nodiscard]] intptr_t right_height() const noexcept { return (right ? right->height : 0u); }
 
             [[nodiscard]] auto heights() const noexcept { return std::pair(left_height(), right_height()); }
 
@@ -221,6 +219,8 @@ namespace {
     };
 }
 
-uintptr_t getBlock() noexcept { return block_host::instance().allocate(); }
+namespace internal {
+    void* rent_block() noexcept { return block_host::instance().allocate(); }
 
-void returnBlock(const uintptr_t block) noexcept { return block_host::instance().free(block); }
+    void return_block(void* const block) noexcept { return block_host::instance().free(block); }
+}
