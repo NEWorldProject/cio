@@ -3,33 +3,40 @@ package site.neworld.cio.block
 import kotlinx.coroutines.CompletableDeferred
 import site.neworld.cio.internal.IODispatch
 import site.neworld.cio.unsafe.Span
+import site.neworld.utils.AResource
+import java.nio.file.Path
+import java.util.*
 
-private external fun read(dispatch: Long, handle: Long, buffer: Long, offset: Long, length: Long)
+private external fun open(path: String, flags: Int): Long
 
-private external fun write(dispatch: Long, handle: Long, buffer: Long, offset: Long, length: Long)
+private external fun read(dispatch: Int, handle: Long, buffer: Long, offset: Long, length: Long)
+
+private external fun write(dispatch: Int, handle: Long, buffer: Long, offset: Long, length: Long)
 
 private external fun readMulti(
-    dispatch: Long, handle: Long,
+    dispatch: Int, handle: Long,
     bufferHeads: LongArray, bufferSizes: LongArray,
     blockOffsets: LongArray, spanSizes: LongArray
 )
 
 private external fun writeMulti(
-    dispatch: Long, handle: Long,
+    dispatch: Int, handle: Long,
     bufferHeads: LongArray, bufferSizes: LongArray,
     blockOffsets: LongArray, spanSizes: LongArray
 )
 
-class Block internal constructor(private val handle: Long) {
-    suspend fun read(buffer: Span, offset: Long): Long {
-        val deferred = CompletableDeferred<Long>()
+private external fun close(handle: Long)
+
+class Block internal constructor(private val handle: Long) : AResource() {
+    suspend fun read(buffer: Span, offset: Long): Int {
+        val deferred = CompletableDeferred<Int>()
         val dispatch = IODispatch.assign(deferred)
         read(dispatch, handle, buffer.native, offset, buffer.size)
         return deferred.await()
     }
 
-    suspend fun write(buffer: Span, offset: Long): Long {
-        val deferred = CompletableDeferred<Long>()
+    suspend fun write(buffer: Span, offset: Long): Int {
+        val deferred = CompletableDeferred<Int>()
         val dispatch = IODispatch.assign(deferred)
         write(dispatch, handle, buffer.native, offset, buffer.size)
         return deferred.await()
@@ -42,17 +49,35 @@ class Block internal constructor(private val handle: Long) {
         )
     }
 
-    suspend fun readMulti(buffers: Array<Span>, overlapped: Array<Span>): Long {
-        val deferred = CompletableDeferred<Long>()
+    suspend fun readMulti(buffers: Array<Span>, overlapped: Array<Span>): Int {
+        val deferred = CompletableDeferred<Int>()
         val dispatch = IODispatch.assign(deferred)
-        split(buffers) {a, b -> split(overlapped) { c, d -> readMulti(dispatch, handle, a, b, c, d)} }
+        split(buffers) { a, b -> split(overlapped) { c, d -> readMulti(dispatch, handle, a, b, c, d) } }
         return deferred.await()
     }
 
-    suspend fun writeMulti(buffers: Array<Span>, overlapped: Array<Span>): Long {
-        val deferred = CompletableDeferred<Long>()
+    suspend fun writeMulti(buffers: Array<Span>, overlapped: Array<Span>): Int {
+        val deferred = CompletableDeferred<Int>()
         val dispatch = IODispatch.assign(deferred)
-        split(buffers) {a, b -> split(overlapped) { c, d -> writeMulti(dispatch, handle, a, b, c, d)} }
+        split(buffers) { a, b -> split(overlapped) { c, d -> writeMulti(dispatch, handle, a, b, c, d) } }
         return deferred.await()
     }
+
+    override fun close() = close(handle)
+}
+
+enum class OpenFlag(val v: Int) {
+    Read(1), Write(2),
+    Create(4), Append(8), Truncate(16)
+}
+
+typealias OpenFlags = EnumSet<OpenFlag>
+
+infix fun OpenFlag.and(other: OpenFlag) = OpenFlags.of(this, other)
+infix fun OpenFlags.and(other: OpenFlag) = this + other
+
+fun open(path: Path, flags: OpenFlags): Block {
+    var flag = 0
+    for (x in flags) flag = flag and x.v
+    return Block(open(path.toAbsolutePath().toString(), flag))
 }

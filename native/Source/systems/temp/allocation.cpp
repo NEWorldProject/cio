@@ -1,8 +1,5 @@
-#pragma once
-
 #include <new>
 #include <atomic>
-#include "block.h"
 #include "interfaces/temp.h"
 
 namespace {

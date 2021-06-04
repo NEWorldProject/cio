@@ -83,7 +83,7 @@ namespace {
         }
         const auto ret = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(hFile));
         try {
-            internal::iocp_register(hFile, ret);
+            internal::iocp_register(hFile);
         }
         catch (...) {
             CloseHandle(hFile);

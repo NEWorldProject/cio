@@ -6,7 +6,7 @@
 #include "internal/system.h"
 
 namespace internal {
-    void iocp_register(HANDLE hdc, uintptr_t key);
+    void iocp_register(HANDLE hdc);
 
     struct ntos_simple_aio_record;
 

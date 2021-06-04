@@ -10,6 +10,12 @@ namespace internal {
     [[nodiscard]] void *temp_allocate(uintptr_t size) noexcept;
 
     constexpr uintptr_t temp_max_span = 1u << 18u;
+
+    static constexpr uintptr_t block_size = 4u << 20u; // 4MiB
+
+    void* rent_block() noexcept;
+
+    void return_block(void* blk) noexcept;
 }
 
 template<class T>

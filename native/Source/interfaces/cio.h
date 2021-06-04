@@ -6,26 +6,11 @@
 namespace cio {
     enum status {
         CIO_OK,
-        CIO_PARTIAL,
         CIO_EACCES, //permission denied
         CIO_EADDRINUSE, //address already in use
         CIO_EADDRNOTAVAIL, //address not available
         CIO_EAFNOSUPPORT, // address family not supported
         CIO_EAGAIN, // resource temporarily unavailable
-        CIO_EAI_ADDRFAMILY, //address family not supported
-        CIO_EAI_AGAIN, // temporary failure
-        CIO_EAI_BADFLAGS, // bad ai_flags value
-        CIO_EAI_BADHINTS, // invalid value for hints
-        CIO_EAI_CANCELED, // request canceled
-        CIO_EAI_FAIL, // permanent failure
-        CIO_EAI_FAMILY, // ai_family not supported
-        CIO_EAI_MEMORY, // out of memory
-        CIO_EAI_NODATA, // no address
-        CIO_EAI_NONAME, // unknown node or service
-        CIO_EAI_OVERFLOW, // argument buffer overflow
-        CIO_EAI_PROTOCOL, // resolved protocol is unknown
-        CIO_EAI_SERVICE, // service not available for socket type
-        CIO_EAI_SOCKTYPE, // socket type not supported
         CIO_EALREADY, // connection already in progress
         CIO_EBADF, // bad file descriptor
         CIO_EBUSY, // resource busy or locked
@@ -94,46 +79,11 @@ namespace cio {
         explicit exception_errc(const status status) noexcept: errc(status) {}
     };
 
-    using completion_callback = void(*)(uint32_t id, uint32_t status, uint32_t completed_bytes) noexcept;
+    using completion_callback = void (*)(uint32_t id, uint32_t status, uint32_t completed_bytes) noexcept;
 
     void set_completion_callback(completion_callback callback) noexcept;
 
-    // Feedback Bus
-    void trap_worker();
-
-    // Operations on block devices (e.g. Regular File)
-    namespace block {
-        enum flag {
-            O_READ = 1ul,
-            O_WRITE = 2ul,
-            O_CREAT = 4ul,
-            O_EXCL = 8ul,
-            O_TRUNC = 16ul,
-            O_EXLOCK = 32ul
-        };
-
-        uint64_t open(const char *path_utf8, uint32_t flags);
-
-        void close(uint64_t hdc) noexcept;
-
-        void read(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size, uint64_t offset) noexcept;
-
-        void write(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size, uint64_t offset) noexcept;
-
-        void read_multi(
-                uint64_t hdc, uint32_t id,
-                uint64_t *buffers, uint64_t *sizes,
-                uint64_t *offsets, uint64_t *spans
-        );
-
-        void write_multi(
-                uint64_t hdc, uint32_t id,
-                uint64_t *buffers, uint64_t *sizes,
-                uint64_t *offsets, uint64_t *spans
-        );
-    }
-
-// Operations on stream handles (e.g. TCP socket)
+    // Operations on stream handles (e.g. TCP socket)
     void stream_send(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
 
     void stream_receive(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
@@ -142,7 +92,7 @@ namespace cio {
 
     void stream_receive_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes);
 
-// Operations on datagram handles (e.g. UDP socket)
+    // Operations on datagram handles (e.g. UDP socket)
     void datagram_send(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
 
     void datagram_receive(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
@@ -150,4 +100,28 @@ namespace cio {
     void datagram_send_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes);
 
     void datagram_receive_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes);
+}
+
+// Operations on block devices (e.g. Regular File)
+namespace cio::block {
+    enum flag {
+        O_READ = 1ul,
+        O_WRITE = 2ul,
+        O_CREAT = 4ul,
+        O_EXCL = 8ul,
+        O_TRUNC = 16ul,
+        O_EXLOCK = 32ul
+    };
+
+    uint64_t open(const char *path_utf8, uint32_t flags);
+
+    void close(uint64_t hdc) noexcept;
+
+    void read(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size, uint64_t offset) noexcept;
+
+    void write(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size, uint64_t offset) noexcept;
+
+    void read_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
+
+    void write_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
 }

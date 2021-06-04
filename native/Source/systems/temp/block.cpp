@@ -1,9 +1,6 @@
-#include "block.h"
 #include <mutex>
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "internal/system.h"
+#include "interfaces/temp.h"
 
 namespace {
     class block_host {
