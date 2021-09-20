@@ -7,7 +7,7 @@ import site.neworld.utils.AResource
 import java.nio.file.Path
 import java.util.*
 
-private external fun open(path: String, flags: Int): Long
+private external fun open(path: ByteArray, flags: Int): Long
 
 private external fun read(dispatch: Int, handle: Long, buffer: Long, offset: Long, length: Long)
 
@@ -68,16 +68,11 @@ class Block internal constructor(private val handle: Long) : AResource() {
 
 enum class OpenFlag(val v: Int) {
     Read(1), Write(2),
-    Create(4), Append(8), Truncate(16)
+    Create(4), Excl(8), Truncate(16), ExLock(32)
 }
 
-typealias OpenFlags = EnumSet<OpenFlag>
-
-infix fun OpenFlag.and(other: OpenFlag) = OpenFlags.of(this, other)
-infix fun OpenFlags.and(other: OpenFlag) = this + other
-
-fun open(path: Path, flags: OpenFlags): Block {
+fun open(path: Path, vararg flags: OpenFlag): Block {
     var flag = 0
-    for (x in flags) flag = flag and x.v
-    return Block(open(path.toAbsolutePath().toString(), flag))
+    for (x in flags) flag = flag or x.v
+    return Block(open(path.toAbsolutePath().toString().encodeToByteArray(), flag))
 }

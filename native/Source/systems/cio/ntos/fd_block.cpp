@@ -9,17 +9,14 @@ using namespace cio;
 using namespace cio::block;
 
 namespace {
-    template<class T> using temp_basic_string = std::basic_string<T, std::char_traits<T>, temp_alloc<T>>;
-    using temp_u16string = temp_basic_string<char16_t>;
-
     temp_u16string ntos_get_path(const char *path_utf8) noexcept {
         std::string_view path_view{path_utf8};
-        auto path_wide = std::vector<char16_t, temp_alloc<char16_t>>();
-        MultiByteToWideChar(
+        auto path_wide = std::vector<char16_t, temp_alloc<char16_t>>(path_view.length() + 2);
+        path_wide[MultiByteToWideChar(
                 CP_UTF8, MB_COMPOSITE,
                 path_view.data(), static_cast<int>(path_view.size()),
                 reinterpret_cast<LPWSTR>(path_wide.data()), static_cast<int>(path_wide.capacity())
-        );
+        )]=0;
         return temp_u16string(uR"(\\?\)") + path_wide.data();
     }
 

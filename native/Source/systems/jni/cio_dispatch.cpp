@@ -1,10 +1,9 @@
 #include <mutex>
 #include <atomic>
 #include <algorithm>
-#include "internal/semaphore.h"
-#include "interfaces/jni.h"
-#include "interfaces/cio.h"
+#include "cio_jni.h"
 #include "interfaces/temp.h"
+#include "internal/semaphore.h"
 
 namespace {
     struct complete_data {
@@ -39,7 +38,7 @@ namespace {
     semaphore activation;
     std::atomic_bool activated{false};
 
-    void completion_callback(uint32_t id, uint32_t status, uint32_t completed_bytes) noexcept {
+    void dispatch_callback(uint32_t id, uint32_t status, uint32_t completed_bytes) noexcept {
         auto block = tail.load();
         auto current = rotation_tail.fetch_add(1);
         if (current >= record_count) {
@@ -77,22 +76,23 @@ namespace {
 
     jobject get_dispatch_object(JNIEnv *e) {
         const auto clazz = e->FindClass("site/neworld/cio/internal/IODispatchKt");
-        const auto method = e->GetMethodID(
+        const auto method = e->GetStaticMethodID(
                 clazz,
                 "getDispatch",
                 "()Lsite/neworld/cio/internal/CIONativeDispatch;"
         );
-        return e->NewGlobalRef(e->CallStaticObjectMethod(clazz, method));
+        const auto ref = e->CallStaticObjectMethod(clazz, method);
+        return e->NewGlobalRef(ref);
     }
 
     jmethodID get_dispatch_method(JNIEnv *e) {
         const auto clazz = e->FindClass("site/neworld/cio/internal/CIONativeDispatch");
-        return e->GetMethodID(clazz, "batchDispatch", "(JJ)V;");
+        return e->GetMethodID(clazz, "batchDispatch", "(JJ)V");
     }
 }
 
 void loadIODispatchKt(JavaVM *vm, JNIEnv *e) {
-    cio::set_completion_callback(completion_callback);
+    cio::set_completion_callback(dispatch_callback);
     // fetch the instance
     const auto dispatch = get_dispatch_object(e);
     const auto dispatch_method = get_dispatch_method(e);
@@ -100,7 +100,7 @@ void loadIODispatchKt(JavaVM *vm, JNIEnv *e) {
     activated.store(true);
     std::thread([=]() noexcept {
         JNIEnv *thread_env{};
-        vm->AttachCurrentThread(reinterpret_cast<void **>(&thread_env), nullptr);
+        vm->AttachCurrentThreadAsDaemon(reinterpret_cast<void **>(&thread_env), nullptr);
         dispatch_worker(thread_env, dispatch, dispatch_method);
         thread_env->DeleteGlobalRef(dispatch);
         vm->DetachCurrentThread();
@@ -108,6 +108,12 @@ void loadIODispatchKt(JavaVM *vm, JNIEnv *e) {
 }
 
 void unloadIODispatchKt() noexcept {
-    cio::set_completion_callback(nullptr); // null the callback
+    cio::set_completion_callback(nullptr); // null the dispatch_callback
     activated.store(false); // stop the feedback loop
+}
+
+namespace cio::jni {
+    void direct_dispatch(uint32_t id, uint32_t status, uint32_t completed_bytes) noexcept {
+        dispatch_callback(id, status, completed_bytes);
+    }
 }

@@ -3,43 +3,39 @@
 #include "interfaces/jni.h"
 
 static void JNICALL copyB2N(JNIEnv *e, jclass, jbyteArray src, jlong dst, jint size) noexcept {
-    const auto c_src = e->GetPrimitiveArrayCritical(src, nullptr);
-    std::memmove(ptr(dst), c_src, size);
-    e->ReleasePrimitiveArrayCritical(src, c_src, JNI_ABORT);
+    const auto c_src = jni::get_critical_array<JNI_ABORT, jbyte>(e, src);
+    std::memmove(ptr(dst), c_src.get(), size);
 }
 
 static void JNICALL copyN2B(JNIEnv *e, jclass, jlong src, jint size, jbyteArray dst) noexcept {
-    const auto c_dst = e->GetPrimitiveArrayCritical(dst, nullptr);
-    std::memmove(c_dst, ptr(src), size);
-    e->ReleasePrimitiveArrayCritical(dst, c_dst, 0);
+    const auto c_dst = jni::get_critical_array<0, jlong>(e, dst);
+    std::memmove(c_dst.get(), ptr(src), size);
 }
 
 template<class T>
 static void JNICALL copyM2U(JNIEnv *e, jclass, jarray src, jlong dst, jint size, jboolean le) noexcept {
-    const auto c_src = e->GetPrimitiveArrayCritical(src, nullptr);
+    const auto c_src = jni::get_critical_array<JNI_ABORT, T>(e, src);
     if (le && native_le) {
-        std::memmove(ptr(dst), c_src, size * sizeof(T));
+        std::memmove(ptr(dst), c_src.get(), size * sizeof(T));
     } else {
         auto l = static_cast<uint8_t *>(ptr(dst));
-        auto r = static_cast<T *>(c_src);
+        auto r = c_src.get();
         const auto end = r + size;
         for (; r < end; ++r, l += sizeof(T)) store(l, *r);
     }
-    e->ReleasePrimitiveArrayCritical(src, c_src, JNI_ABORT);
 }
 
 template<class T>
 static void JNICALL copyU2M(JNIEnv *e, jclass, jlong src, jint size, jarray dst, jboolean le) noexcept {
-    const auto c_dst = e->GetPrimitiveArrayCritical(dst, nullptr);
+    const auto c_dst = jni::get_critical_array<0, T>(e, dst);
     if (le && native_le) {
-        std::memmove(c_dst, const_cast<const void *>(ptr(src)), size * sizeof(T));
+        std::memmove(c_dst.get(), const_cast<const void *>(ptr(src)), size * sizeof(T));
     } else {
-        auto l = static_cast<T *>(c_dst);
+        auto l = c_dst.get();
         auto r = static_cast<uint8_t *>(ptr(src));
         const auto end = l + size;
         for (; l < end; ++l, r += sizeof(T)) load(*l, r);
     }
-    e->ReleasePrimitiveArrayCritical(dst, c_dst, 0);
 }
 
 static_assert(std::numeric_limits<float>::is_iec559);

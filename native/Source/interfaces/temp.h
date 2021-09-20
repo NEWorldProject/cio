@@ -3,6 +3,7 @@
 #include <new>
 #include <memory>
 #include <cstdint>
+#include <string>
 
 namespace internal {
     void temp_free(void *mem) noexcept;
@@ -77,3 +78,8 @@ public:
 
     [[nodiscard]] bool operator!=(const temp_alloc &r) const noexcept { return false; }
 };
+
+template<class T> using temp_basic_string = std::basic_string<T, std::char_traits<T>, temp_alloc<T>>;
+using temp_string = temp_basic_string<char>;
+using temp_u8string = temp_basic_string<char8_t>;
+using temp_u16string = temp_basic_string<char16_t>;

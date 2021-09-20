@@ -8,16 +8,16 @@ private val LIBRARY = System.loadLibrary("cio")
 
 abstract class Memory(val native: Long, val size: Long) : SyncClosable
 
-class Span(native: Long, size: Long) : Memory(native, size) {
+open class Span(native: Long, size: Long) : Memory(native, size) {
     override fun close() = Unit
 }
 
-class TempMemory(size: Long, native: Long = tempAllocate(size)) : Memory(native, size) {
+class TempMemory(size: Long, native: Long = tempAllocate(size)) : Span(native, size) {
     internal fun drop() = Unit
     override fun close() = tempFree(native, size)
 }
 
-class HeapMemory(size: Long, native: Long = heapAllocate(size)) : Memory(native, size) {
+class HeapMemory(size: Long, native: Long = heapAllocate(size)) : Span(native, size) {
     internal fun drop() = Unit
     override fun close() = heapFree(native, size)
 }
