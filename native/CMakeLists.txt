@@ -10,6 +10,6 @@ endif()
 
 file(GLOB_RECURSE SRC ${CMAKE_CURRENT_SOURCE_DIR}/Source/*.*)
 
-add_library(cio SHARED ${SRC})
+add_library(cio SHARED ${SRC} Source/systems/cio/ntos/fd_stream.cpp)
 target_link_libraries(cio PRIVATE ${JNI_LIBRARIES})
 target_include_directories(cio PRIVATE ${JNI_INCLUDE_DIRS} ${CMAKE_CURRENT_SOURCE_DIR}/Source)

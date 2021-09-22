@@ -37,7 +37,7 @@ static void JNICALL readMulti(
         const auto c_sizes = jni::get_critical_array<0, uint64_t>(e, sizes);
         const auto c_offsets = jni::get_critical_array<0, uint64_t>(e, offsets);
         const auto c_spans = jni::get_critical_array<0, uint64_t>(e, spans);
-        cb::read_multi(handle, dispatch, c_buffers.get(), c_sizes.get(), c_offsets.get(), c_spans.get());
+        cb::readv(handle, dispatch, c_buffers.get(), c_sizes.get(), c_offsets.get(), c_spans.get());
     });
 }
 
@@ -52,7 +52,7 @@ static void JNICALL writeMulti(
         const auto c_sizes = jni::get_critical_array<0, uint64_t>(e, sizes);
         const auto c_offsets = jni::get_critical_array<0, uint64_t>(e, offsets);
         const auto c_spans = jni::get_critical_array<0, uint64_t>(e, spans);
-        cb::write_multi(handle, dispatch, c_buffers.get(), c_sizes.get(), c_offsets.get(), c_spans.get());
+        cb::writev(handle, dispatch, c_buffers.get(), c_sizes.get(), c_offsets.get(), c_spans.get());
     });
 }
 

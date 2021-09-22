@@ -71,6 +71,7 @@ namespace internal {
     void temp_free(void *const mem) noexcept {
         static constexpr uintptr_t rev = 0b11'1111'1111'1111'1111'1111;
         static constexpr uintptr_t mask = ~rev;
+        if (mem == nullptr) return;
         const auto base = reinterpret_cast<uintptr_t>(mem) & mask;
         const auto header = reinterpret_cast<struct header *>(base);
         if (header->flying.fetch_sub(1) == 1) release(header);

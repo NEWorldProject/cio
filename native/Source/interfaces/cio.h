@@ -83,15 +83,6 @@ namespace cio {
 
     void set_completion_callback(completion_callback callback) noexcept;
 
-    // Operations on stream handles (e.g. TCP socket)
-    void stream_send(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
-
-    void stream_receive(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
-
-    void stream_send_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes);
-
-    void stream_receive_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes);
-
     // Operations on datagram handles (e.g. UDP socket)
     void datagram_send(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size);
 
@@ -121,7 +112,22 @@ namespace cio::block {
 
     void write(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size, uint64_t offset) noexcept;
 
-    void read_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
+    void readv(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
 
-    void write_multi(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
+    void writev(uint64_t hdc, uint32_t id, uint64_t *buffers, uint64_t *sizes, uint64_t *offsets, uint64_t *spans);
+}
+
+// Operations on stream handles (e.g. TCP socket)
+namespace cio::stream {
+    void connect_tcp(uint32_t id, const char* address, int port);
+
+    void close(uint64_t hdc);
+
+    void send(uint64_t hdc, uint32_t id, uint64_t buffer, uint32_t size) noexcept;
+
+    void recv(uint64_t hdc, uint32_t id, uint64_t buffer, uint32_t size) noexcept;
+
+    void sendv(uint64_t hdc, uint32_t id, uint32_t count, uint64_t *buffers, uint32_t *sizes) noexcept;
+
+    void recvv(uint64_t hdc, uint32_t id, uint32_t count, uint64_t *buffers, uint32_t *sizes) noexcept;
 }

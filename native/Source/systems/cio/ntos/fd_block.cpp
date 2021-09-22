@@ -80,7 +80,7 @@ namespace {
         }
         const auto ret = static_cast<uint64_t>(reinterpret_cast<uintptr_t>(hFile));
         try {
-            internal::iocp_register(hFile);
+            internal::ntos_iocp_file_register(hFile);
         }
         catch (...) {
             CloseHandle(hFile);
@@ -89,7 +89,7 @@ namespace {
         return ret;
     }
 
-    void ntos_read(uint64_t hdc, uint64_t buffer, uint64_t size, internal::ntos_simple_aio_record *aio) {
+    void ntos_read(uint64_t hdc, uint64_t buffer, uint64_t size, internal::ntos_simple_file_aio_record *aio) {
         auto result = ReadFile(
                 reinterpret_cast<HANDLE>(static_cast<uintptr_t>(hdc)),
                 reinterpret_cast<LPVOID>(static_cast<uintptr_t>(buffer)),
@@ -97,11 +97,11 @@ namespace {
                 nullptr,
                 &aio->overlapped
         );
-        if (result == TRUE) return ntos_release_overlapped(aio, size);
-        if (GetLastError() != ERROR_IO_PENDING) return ntos_release_overlapped(aio, 0);
+        if (result == TRUE) return ntos_release_file_aio(aio, size);
+        if (GetLastError() != ERROR_IO_PENDING) return ntos_release_file_aio(aio, 0);
     }
 
-    void ntos_write(uint64_t hdc, uint64_t buffer, uint64_t size, internal::ntos_simple_aio_record *aio) {
+    void ntos_write(uint64_t hdc, uint64_t buffer, uint64_t size, internal::ntos_simple_file_aio_record *aio) {
         auto result = WriteFile(
                 reinterpret_cast<HANDLE>(static_cast<uintptr_t>(hdc)),
                 reinterpret_cast<LPVOID>(static_cast<uintptr_t>(buffer)),
@@ -109,8 +109,8 @@ namespace {
                 nullptr,
                 &aio->overlapped
         );
-        if (result == TRUE) return ntos_release_overlapped(aio, size);
-        if (GetLastError() != ERROR_IO_PENDING) return ntos_release_overlapped(aio, 0);
+        if (result == TRUE) return ntos_release_file_aio(aio, size);
+        if (GetLastError() != ERROR_IO_PENDING) return ntos_release_file_aio(aio, 0);
     }
 
     template<class T>
@@ -156,7 +156,7 @@ void cio::block::write(uint64_t hdc, uint32_t id, uint64_t buffer, uint64_t size
     ntos_write(hdc, buffer, size, aio);
 }
 
-void cio::block::read_multi(
+void cio::block::readv(
         uint64_t hdc, uint32_t id,
         uint64_t *buffers, uint64_t *sizes,
         uint64_t *offsets, uint64_t *spans
@@ -170,7 +170,7 @@ void cio::block::read_multi(
     }
 }
 
-void cio::block::write_multi(
+void cio::block::writev(
         uint64_t hdc, uint32_t id,
         uint64_t *buffers, uint64_t *sizes,
         uint64_t *offsets, uint64_t *spans
